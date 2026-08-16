@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Bible Reformatter</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">개역개정 · NIV</div>
+        <h1>Bible Reformatter</h1>
+        <p>성경 장절을 입력하면 개역개정과 NIV를 읽기 좋은 형식으로 정리합니다.</p>
+      </div>
+    </section>
+
+    <section class="panel input-panel">
+      <label for="reference">성경구절</label>
+      <input id="reference" autocomplete="off" spellcheck="false"
+             placeholder="예: 이사야 1장 1절~16절 / 사26:4-16 / 요3:16" />
+
+      <label for="highlight">강조단어 <span class="muted">(선택)</span></label>
+      <input id="highlight" autocomplete="off" spellcheck="false"
+             placeholder="예: 혼돈,깊음,빛" />
+
+      <div class="actions">
+        <button id="submitBtn" class="primary">말씀 불러오기</button>
+        <button id="clearBtn" class="secondary">초기화</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section id="resultPanel" class="panel result-panel hidden">
+      <div class="title-row">
+        <h2 id="passageTitle"></h2>
+        <button id="copyTitleBtn" class="copy-btn">📋 제목 복사</button>
+      </div>
+
+      <div id="groups"></div>
+
+      <div class="footer-actions">
+        <button id="copyAllBtn" class="primary">📋 전체 복사</button>
+      </div>
+
+      <div class="source-note">
+        <span>개역개정: 대한성서공회</span>
+        <span>NIV: BibleGateway</span>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
