@@ -1,0 +1,239 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Segoe UI", sans-serif;
+  --bg: #07111f;
+  --panel: #101b2d;
+  --panel2: #0c1626;
+  --border: #233650;
+  --text: #f5f7fb;
+  --muted: #9cabc0;
+  --accent: #79a8ff;
+  --accent2: #9bc1ff;
+  --danger: #ff9b9b;
+  --shadow: 0 18px 50px rgba(0,0,0,.28);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(73,113,184,.20), transparent 34rem),
+    var(--bg);
+  color: var(--text);
+}
+
+button, input { font: inherit; }
+
+.app-shell {
+  width: min(960px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 28px 0 max(40px, env(safe-area-inset-bottom));
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  padding: 8px 2px 20px;
+}
+
+.eyebrow {
+  font-weight: 700;
+  color: var(--accent2);
+  font-size: .86rem;
+  letter-spacing: .08em;
+}
+
+h1 {
+  margin: 5px 0 6px;
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  letter-spacing: -.04em;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(17,29,48,.98), rgba(11,21,36,.98));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.input-panel {
+  padding: 18px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+label:not(:first-child) { margin-top: 16px; }
+
+.muted { color: var(--muted); font-weight: 500; }
+
+input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #091423;
+  color: var(--text);
+  outline: none;
+  font-size: 16px;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(121,168,255,.14);
+}
+
+.actions, .footer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+button {
+  border: 0;
+  border-radius: 11px;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 10px 15px;
+  transition: transform .12s ease, opacity .12s ease;
+}
+
+button:active { transform: translateY(1px); }
+button:disabled { opacity: .55; cursor: default; }
+
+.primary {
+  background: var(--accent);
+  color: #06101d;
+  font-weight: 800;
+}
+
+.secondary {
+  background: #19283d;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.status {
+  min-height: 22px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: .93rem;
+}
+.status.error { color: var(--danger); }
+
+.result-panel {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.hidden { display: none; }
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title-row h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+}
+
+.copy-btn {
+  flex: 0 0 auto;
+  background: #19283d;
+  border: 1px solid var(--border);
+  color: var(--text);
+  min-height: 36px;
+  padding: 7px 10px;
+  font-size: .84rem;
+}
+
+.verse-group {
+  padding: 15px 0 13px;
+  border-bottom: 1px solid rgba(35,54,80,.72);
+}
+
+.verse {
+  margin-bottom: 8px;
+}
+
+.ko {
+  font-size: 1.04rem;
+  line-height: 1.62;
+  font-weight: 650;
+  word-break: keep-all;
+}
+
+.en {
+  margin-top: 3px;
+  font-size: .98rem;
+  line-height: 1.58;
+  color: #dce4ef;
+}
+
+mark {
+  background: transparent;
+  color: #ffd978;
+  font-weight: 800;
+}
+
+.group-copy {
+  margin-top: 8px;
+}
+
+.footer-actions { justify-content: flex-start; margin-top: 18px; }
+
+.source-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  color: var(--muted);
+  font-size: .78rem;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100% - 16px, 960px);
+    padding-top: 15px;
+  }
+
+  .hero { padding: 2px 4px 14px; }
+  .panel { border-radius: 15px; }
+  .input-panel, .result-panel { padding: 14px; }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .primary { min-height: 48px; }
+
+  .title-row {
+    align-items: flex-start;
+  }
+
+  .copy-btn { white-space: nowrap; }
+
+  .ko { font-size: 1.02rem; }
+  .en { font-size: .96rem; }
+}
