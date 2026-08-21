@@ -16,6 +16,8 @@
 
 * { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -98,6 +100,26 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(121,168,255,.14);
 }
 
+.input-hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #405574;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: #17253a;
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
 .actions, .footer-actions {
   display: flex;
   gap: 10px;
@@ -139,6 +161,7 @@ button:disabled { opacity: .55; cursor: default; }
 .result-panel {
   margin-top: 16px;
   padding: 18px;
+  scroll-margin-top: 16px;
 }
 
 .hidden { display: none; }
@@ -146,14 +169,16 @@ button:disabled { opacity: .55; cursor: default; }
 .title-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
 .title-row h2 {
   margin: 0;
+  flex: 0 1 auto;
   font-size: clamp(1.15rem, 3.5vw, 1.45rem);
 }
 
@@ -229,7 +254,7 @@ mark {
   .primary { min-height: 48px; }
 
   .title-row {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .copy-btn { white-space: nowrap; }
