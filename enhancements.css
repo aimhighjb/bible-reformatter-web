@@ -1,0 +1,20 @@
+.verse-group {
+  transition: opacity .18s ease, background-color .18s ease;
+}
+
+.verse-group.copied-group {
+  opacity: .48;
+}
+
+.verse-group.copied-group .ko,
+.verse-group.copied-group .en,
+.verse-group.copied-group .verse-number,
+.verse-group.copied-group mark {
+  color: #7f8a9a;
+}
+
+.verse-group.copied-group .copy-btn {
+  background: #2a313c;
+  border-color: #3a4554;
+  color: #8c97a6;
+}
