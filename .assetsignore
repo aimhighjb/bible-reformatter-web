@@ -1,0 +1,9 @@
+.git/
+.github/
+functions/
+src/
+README.md
+wrangler.jsonc
+package.json
+package-lock.json
+.assetsignore
