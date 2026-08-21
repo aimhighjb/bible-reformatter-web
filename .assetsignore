@@ -1,9 +1,13 @@
+node_modules/
+**/node_modules/**
 .git/
 .github/
 functions/
 src/
 README.md
-wrangler.jsonc
 package.json
 package-lock.json
+bun.lock
+bun.lockb
+wrangler.jsonc
 .assetsignore
