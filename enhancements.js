@@ -1,9 +1,10 @@
 // Bible Reformatter Web enhancements
 // - Alt+B: clipboard -> reference -> load -> scroll to result
 // - Accept chapter.verse (e.g. 요3.16) as chapter:verse
+// - Accept 시편 N편 syntax as well as N장
 // - Accept comma-separated / non-contiguous verses
 // - Visually gray copied verse groups after a successful copy
-// - Remove BibleGateway section headings from NIV verse text
+// - Remove BibleGateway section headings / Psalm titles from NIV verse text
 
 function normalizeReferenceSeparators(raw) {
   return String(raw || "")
@@ -46,13 +47,14 @@ parseReference = function enhancedParseReference(input) {
     .replaceAll("：", ":")
     .replace(/\s+/g, "")
     .replaceAll("장", ":")
+    .replaceAll("편", ":")
     .replaceAll("절", "")
     .replace(/:+/g, ":");
 
   const m = s.match(/^([가-힣0-9]+?)(\d+):(.+)$/);
   if (!m) {
     throw new Error(
-      "장절 형식을 인식하지 못했습니다. 예: 행15:16-17 / 사도행전 15장 16절, 19절"
+      "장절 형식을 인식하지 못했습니다. 예: 시편 13편 1절, 2절 / 행15:16-17 / 사도행전 15장 16절, 19절"
     );
   }
 
@@ -62,7 +64,7 @@ parseReference = function enhancedParseReference(input) {
 
   const chapter = Number(chRaw);
   if (!Number.isInteger(chapter) || chapter < 1) {
-    throw new Error("잘못된 장 번호입니다.");
+    throw new Error("잘못된 장/편 번호입니다.");
   }
 
   const selected = [];
@@ -169,10 +171,10 @@ copyText = async function enhancedCopyText(text, button) {
   }
 };
 
-// BibleGateway sometimes places a section heading such as
-// "Israel’s Restoration" in the same matched container as the first verse.
-// Collect real heading elements from the source document and strip only a
-// matching heading found at the beginning of a parsed verse.
+// BibleGateway can place multiple headings before the first verse, e.g.
+// Psalm 13 + "For the director of music. A psalm of David."
+// or a normal section heading such as "Israel’s Restoration".
+// Strip any consecutive heading prefixes while preserving the actual verse text.
 const originalParseEnglish = parseEnglish;
 parseEnglish = function enhancedParseEnglish(html, ref) {
   const out = originalParseEnglish(html, ref);
@@ -184,22 +186,32 @@ parseEnglish = function enhancedParseEnglish(html, ref) {
     ".section-heading", ".s1", ".s2", ".s3"
   ].join(",");
 
-  const headings = [...doc.querySelectorAll(headingSelector)]
-    .map(el => (el.textContent || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim())
-    .filter(Boolean)
-    .sort((a, b) => b.length - a.length);
+  const headings = [...new Set(
+    [...doc.querySelectorAll(headingSelector)]
+      .map(el => (el.textContent || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+  )].sort((a, b) => b.length - a.length);
 
   for (const [verse, originalText] of out.entries()) {
     let text = originalText;
+    let changed = true;
 
-    for (const heading of headings) {
-      if (text === heading) {
-        text = "";
-        break;
-      }
-      if (text.startsWith(heading + " ")) {
-        text = text.slice(heading.length).trimStart();
-        break;
+    // More than one heading can be stacked before verse 1. Keep stripping
+    // literal heading prefixes until the real verse text begins.
+    while (changed && text) {
+      changed = false;
+
+      for (const heading of headings) {
+        if (text === heading) {
+          text = "";
+          changed = true;
+          break;
+        }
+        if (text.startsWith(heading + " ")) {
+          text = text.slice(heading.length).trimStart();
+          changed = true;
+          break;
+        }
       }
     }
 
