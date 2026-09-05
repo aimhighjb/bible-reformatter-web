@@ -16,8 +16,10 @@ parseEnglish = function parseEnglishWithPsalmFix(html, ref) {
     .replace(/\s+/g, " ")
     .trim();
 
-  // Collect actual heading text from BibleGateway. This includes the Psalm
-  // superscription such as "For the director of music. A psalm of David."
+  // BibleGateway renders Psalm titles/superscriptions as real heading elements.
+  // Examples:
+  //   Psalm 13
+  //   For the director of music. A psalm of David.
   const headingSelector = [
     "h1", "h2", "h3", "h4", "h5", "h6",
     ".passage-title", ".heading", ".psalm-title",
@@ -33,15 +35,12 @@ parseEnglish = function parseEnglishWithPsalmFix(html, ref) {
   for (const [verse, rawText] of out.entries()) {
     let text = normalize(rawText);
 
-    // BibleGateway may merge "Psalm 13" into verse 1 text. Remove that
-    // structural chapter title first. An optional one-letter footnote marker
-    // immediately after the number is also tolerated.
     if (verse === 1) {
+      // Remove ONLY the structural Psalm title itself.
+      // Important: do NOT consume an arbitrary following letter. A previous
+      // version treated the F in "For the director..." as a footnote marker.
       const chapter = String(ref.chapter).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const psalmPrefix = new RegExp(
-        `^Psalm\\s+${chapter}(?:\\s*(?:\\[[^\\]]+\\]|\\([^)]*\\)|[a-z]))?\\s*`,
-        "i"
-      );
+      const psalmPrefix = new RegExp(`^Psalm\\s+${chapter}(?=\\s|$)\\s*`, "i");
       text = text.replace(psalmPrefix, "").trimStart();
     }
 
@@ -50,24 +49,27 @@ parseEnglish = function parseEnglishWithPsalmFix(html, ref) {
     let changed = true;
     while (changed && text) {
       changed = false;
+
       for (const headingRaw of headings) {
         let heading = normalize(headingRaw);
 
-        // BibleGateway heading text can include a trailing footnote marker,
-        // e.g. "Psalm 13 a". Normalize that for prefix matching.
+        // Normalize Psalm heading footnote decorations in the heading itself,
+        // e.g. "Psalm 13 a" or "Psalm 13 [a]", without touching verse text.
         if (/^Psalm\s+\d+/i.test(heading)) {
           heading = heading
             .replace(/\s*\[[^\]]+\]\s*$/g, "")
-            .replace(/\s+\(?[a-z]\)?\s*$/i, "")
+            .replace(/\s+\(?[a-z]\)?\s*$/g, "")
             .trim();
         }
 
         if (!heading) continue;
+
         if (text === heading) {
           text = "";
           changed = true;
           break;
         }
+
         if (text.startsWith(heading + " ")) {
           text = text.slice(heading.length).trimStart();
           changed = true;
