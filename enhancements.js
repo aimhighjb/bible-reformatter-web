@@ -46,8 +46,9 @@ parseReference = function enhancedParseReference(input) {
     .replace(/[–—−~～∼]/g, "-")
     .replaceAll("：", ":")
     .replace(/\s+/g, "")
-    .replaceAll("장", ":")
-    .replaceAll("편", ":")
+    // Only treat 장/편 as a chapter separator when it follows a number.
+    // This preserves the book name "시편" instead of turning it into "시:".
+    .replace(/(\d+)(?:장|편)/g, "$1:")
     .replaceAll("절", "")
     .replace(/:+/g, ":");
 
