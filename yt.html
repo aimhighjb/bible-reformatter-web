@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>YouTube Embed View</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .yt-nav-link {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      min-height: 38px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #19283d;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+    .yt-panel { padding: 18px; }
+    .yt-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.55;
+    }
+    .yt-note strong { color: var(--text); }
+    @media (max-width: 640px) {
+      .yt-panel { padding: 14px; }
+      .hero { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">YOUTUBE EMBED VIEW</div>
+        <h1>YouTube Embed View</h1>
+        <p>YouTube 링크를 넣으면 별도 팝업 창에서 embed 화면만 크게 엽니다.</p>
+      </div>
+      <a class="yt-nav-link" href="./index.html" title="Bible Reformatter로 돌아가기">BIBLE</a>
+    </section>
+
+    <section class="panel yt-panel">
+      <label for="ytUrl">YouTube Link -- <kbd>Alt+B</kbd></label>
+      <input id="ytUrl" autocomplete="off" spellcheck="false"
+             placeholder="예: https://www.youtube.com/watch?v=FEr96_T7Ax4" />
+      <div class="input-hint">
+        <kbd>Alt+B</kbd> = 클립보드 YouTube 링크 자동 입력 → Embed 창 열기
+      </div>
+
+      <div class="actions">
+        <button id="openBtn" class="primary">YouTube Embed 열기</button>
+        <button id="clearBtn" class="secondary">초기화</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+
+      <div class="yt-note">
+        지원: youtube.com/watch, youtu.be, youtube.com/shorts, youtube.com/embed, youtube.com/live.<br />
+        <strong>참고:</strong> Chrome 보안 정책상 웹페이지가 브라우저의 모든 주소창/창 테두리를 100% 강제로 제거할 수는 없습니다. 가능한 범위에서 메뉴·툴바 없는 popup 형태로 열립니다.
+      </div>
+    </section>
+  </main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function extractYouTubeId(raw) {
+    const value = String(raw || "").trim();
+    if (!value) throw new Error("YouTube 링크가 비어 있습니다.");
+
+    // Also allow a raw 11-character YouTube video ID.
+    if (/^[A-Za-z0-9_-]{11}$/.test(value)) return value;
+
+    let url;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error("올바른 YouTube 링크가 아닙니다.");
+    }
+
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    let id = "";
+
+    if (host === "youtu.be") {
+      id = url.pathname.split("/").filter(Boolean)[0] || "";
+    } else if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "music.youtube.com"
+    ) {
+      if (url.pathname === "/watch") {
+        id = url.searchParams.get("v") || "";
+      } else {
+        const parts = url.pathname.split("/").filter(Boolean);
+        if (["shorts", "embed", "live"].includes(parts[0])) id = parts[1] || "";
+      }
+    }
+
+    id = id.split(/[?&#/]/)[0];
+    if (!/^[A-Za-z0-9_-]{11}$/.test(id)) {
+      throw new Error("YouTube Video ID를 찾지 못했습니다.");
+    }
+    return id;
+  }
+
+  function popupFeatures() {
+    const availW = window.screen?.availWidth || 1440;
+    const availH = window.screen?.availHeight || 900;
+    let width = Math.min(Math.round(availW * 0.90), 1600);
+    let height = Math.round(width * 9 / 16);
+    const maxH = Math.round(availH * 0.90);
+    if (height > maxH) {
+      height = maxH;
+      width = Math.round(height * 16 / 9);
+    }
+    const left = Math.max(0, Math.round((availW - width) / 2));
+    const top = Math.max(0, Math.round((availH - height) / 2));
+    return `popup=yes,width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,menubar=no,status=no,scrollbars=no,resizable=yes`;
+  }
+
+  function openBlankPlayerWindow() {
+    return window.open("", "_blank", popupFeatures());
+  }
+
+  function renderPlayer(popup, videoId) {
+    if (!popup || popup.closed) {
+      throw new Error("팝업이 차단되었습니다. Chrome에서 이 사이트의 팝업을 허용해주세요.");
+    }
+
+    const embed = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&playsinline=1`;
+    popup.document.open();
+    popup.document.write(`<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YouTube Embed</title>
+<style>html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden}iframe{display:block;width:100%;height:100%;border:0}</style>
+</head><body>
+<iframe src="${embed}" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</body></html>`);
+    popup.document.close();
+    popup.focus();
+  }
+
+  function setStatus(message, isError = false) {
+    const status = $("status");
+    status.className = isError ? "status error" : "status";
+    status.textContent = message;
+  }
+
+  function openFromInput() {
+    let popup = null;
+    try {
+      const id = extractYouTubeId($("ytUrl").value);
+      popup = openBlankPlayerWindow();
+      renderPlayer(popup, id);
+      setStatus("");
+    } catch (error) {
+      if (popup && !popup.closed) popup.close();
+      setStatus(`오류: ${error.message}`, true);
+    }
+  }
+
+  $("openBtn").addEventListener("click", openFromInput);
+  $("clearBtn").addEventListener("click", () => {
+    $("ytUrl").value = "";
+    setStatus("");
+    $("ytUrl").focus();
+  });
+  $("ytUrl").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") openFromInput();
+  });
+
+  document.addEventListener("keydown", async (event) => {
+    if (
+      event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+      event.key.toLowerCase() === "b"
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Open synchronously while the keyboard gesture is active; otherwise
+      // Chrome may block the popup after awaiting clipboard.readText().
+      const popup = openBlankPlayerWindow();
+      try {
+        if (!popup) throw new Error("팝업이 차단되었습니다. Chrome에서 이 사이트의 팝업을 허용해주세요.");
+        if (!navigator.clipboard?.readText) throw new Error("이 브라우저에서는 클립보드 읽기를 지원하지 않습니다.");
+
+        setStatus("클립보드의 YouTube 링크를 읽는 중...");
+        const text = await navigator.clipboard.readText();
+        $("ytUrl").value = text.trim();
+        const id = extractYouTubeId(text);
+        renderPlayer(popup, id);
+        setStatus("");
+      } catch (error) {
+        if (popup && !popup.closed) popup.close();
+        setStatus(`Alt+B 오류: ${error.message}`, true);
+      }
+    }
+  }, true);
+</script>
+</body>
+</html>
